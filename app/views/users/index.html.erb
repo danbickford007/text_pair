@@ -1,0 +1,181 @@
+<center>
+  <h1>Text Pair!!!</h1>
+
+
+  <code contenteditable="true">
+    <div id='content' style='height:500px;width:1500px;background-color:black;color:white;overflow-y:scroll'>
+      <span style="color: blue">var</span> foo = <span style="color: green">"bar"</span>;
+    </div>
+  </code>
+</center>
+<span id='status'></span>
+
+<script>
+
+
+$(function () {
+  "use strict";
+   
+  // for better performance - to avoid searching in DOM
+  var content = $('#content');
+  var input = $('#content');
+  var myName = 'billy mczilly';
+  var myColor = 'blue';
+  var status = $("#status");
+  // if user is running mozilla then use it's built-in WebSocket
+  window.WebSocket = window.WebSocket || window.MozWebSocket;
+   
+  // if browser doesn't support WebSocket, just show some notification and exit
+  if (!window.WebSocket) {
+    content.html($('<p>', { text: 'Sorry, but your browser doesn\'t '
+    + 'support WebSockets.'} ));
+    return;
+  }
+   
+  // open connection
+  var connection = new WebSocket('ws://127.0.0.1:4000');
+   
+  connection.onopen = function () {
+  // first we want users to enter their names
+  };
+   
+  connection.onerror = function (error) {
+    // just in there were some problems with conenction...
+    content.html($('<p>', { text: 'Sorry, but there\'s some problem with your '
+    + 'connection or the server is down.' } ));
+  };
+   
+  // most important part - incoming messages
+  connection.onmessage = function (message) {
+    // try to parse JSON message. Because we know that the server always returns
+    // JSON this should work without any problem but we should make sure that
+    // the massage is not chunked or otherwise damaged.
+    try {
+      var json = JSON.parse(message.data);
+    } catch (e) {
+      console.log('This doesn\'t look like a valid JSON: ', message.data);
+      return;
+    }
+     
+    // NOTE: if you're not sure about the JSON structure
+    // check the server source code above
+    if (json.type === 'color') { // first response from the server with user's color
+      myColor = json.data;
+      status.text(myName + ': ').css('color', myColor);
+      input.removeAttr('disabled').focus();
+      // from now user can start sending messages
+    } else if (json.type === 'history') { // entire message history
+      // insert every single message to the chat window
+      for (var i=0; i < json.data.length; i++) {
+      addMessage(json.data[i].author, json.data[i].text,
+      json.data[i].color, new Date(json.data[i].time));
+      }
+    } else if (json.type === 'message') { // it's a single message
+      input.removeAttr('disabled'); // let the user write another message
+      addMessage(json.data.author, json.data.text,
+      json.data.color, json.data.index);
+    } else {
+      console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+    }
+  };
+   
+  /**
+  * Send mesage when user presses Enter key
+  */
+  $(document).keyup(function(e) {
+      var msg = $("#content").html();
+      if (!msg) {
+        return;
+      }
+      var index = getCaretCharacterOffsetWithin(document.getElementById('content'));
+
+    // send the message as an ordinary text
+      connection.send(JSON.stringify({'message':msg, 'index':index}));
+      $(this).val('');
+      if (myName === false) {
+        myName = msg;
+      }
+  });
+   
+  /**
+  * This method is optional. If the server wasn't able to respond to the
+  * in 3 seconds then show some error message to notify the user that
+  * something is wrong.
+  */
+  setInterval(function() {
+    if (connection.readyState !== 1) {
+    status.text('Error');
+    input.attr('disabled', 'disabled').val('Unable to comminucate '
+    + 'with the WebSocket server.');
+    }
+  }, 3000);
+   
+  /**
+  * Add message to the chat window
+  */
+  function addMessage(author, message, color, index) {
+    content.html('');
+    content.html(message);
+    setEndOfContenteditable(document.getElementById('content'), index);
+    var test = getCaretCharacterOffsetWithin(document.getElementById('content'));
+  }
+
+  function setEndOfContenteditable(contentEditableElement, index)
+  {
+if (window.getSelection) {
+    var sel = window.getSelection();
+    var textNode = document.getElementById("content").firstChild;
+    var range = document.createRange();
+    range.setStart(textNode, index);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+return;
+
+  }
+
+function getCaretCharacterOffsetWithin(element) {
+    var caretOffset = 0;
+    if (typeof window.getSelection != "undefined") {
+        var range = window.getSelection().getRangeAt(0);
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        caretOffset = preCaretRange.toString().length;
+    } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
+        var textRange = document.selection.createRange();
+        var preCaretTextRange = document.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+    return caretOffset;
+}
+
+});
+
+
+
+</script>
+
+
+
+    var range,selection;
+    if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+    {
+      range = document.createRange();//Create a range (a range is a like the selection but invisible)
+      range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+      range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+      selection = window.getSelection();//get the selection object (allows you to change selection)
+      selection.removeAllRanges();//remove any selections already made
+      selection.addRange(range);//make the range you have just created the visible selection
+    }
+    else if(document.selection)//IE 8 and lower
+    {
+      range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+      range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+      range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+      range.select();//Select the range (make it the visible selection
+    }
