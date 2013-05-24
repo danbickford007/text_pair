@@ -33,7 +33,8 @@ $(function () {
   }
    
   // open connection
-  var connection = new WebSocket('ws://127.0.0.1:4000');
+  //var connection = new WebSocket('ws://127.0.0.1:4000');
+  var connection = new WebSocket('ws://192.168.5.117:4000');
    
   connection.onopen = function () {
   // first we want users to enter their names
@@ -117,42 +118,41 @@ $(function () {
     content.html('');
     content.html(message);
     setEndOfContenteditable(document.getElementById('content'), index);
-    var test = getCaretCharacterOffsetWithin(document.getElementById('content'));
   }
 
   function setEndOfContenteditable(contentEditableElement, index)
   {
-if (window.getSelection) {
-    var sel = window.getSelection();
-    var textNode = document.getElementById("content").firstChild;
-    var range = document.createRange();
-    range.setStart(textNode, index);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-}
+    if (window.getSelection) {
+        var sel = window.getSelection();
+        var textNode = document.getElementById("content").firstChild;
+        var range = document.createRange();
+        range.setStart(textNode, index);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
 
-return;
+    return;
 
   }
 
-function getCaretCharacterOffsetWithin(element) {
-    var caretOffset = 0;
-    if (typeof window.getSelection != "undefined") {
-        var range = window.getSelection().getRangeAt(0);
-        var preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(element);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        caretOffset = preCaretRange.toString().length;
-    } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
-        var textRange = document.selection.createRange();
-        var preCaretTextRange = document.body.createTextRange();
-        preCaretTextRange.moveToElementText(element);
-        preCaretTextRange.setEndPoint("EndToEnd", textRange);
-        caretOffset = preCaretTextRange.text.length;
-    }
-    return caretOffset;
-}
+  function getCaretCharacterOffsetWithin(element) {
+      var caretOffset = 0;
+      if (typeof window.getSelection != "undefined") {
+          var range = window.getSelection().getRangeAt(0);
+          var preCaretRange = range.cloneRange();
+          preCaretRange.selectNodeContents(element);
+          preCaretRange.setEnd(range.endContainer, range.endOffset);
+          caretOffset = preCaretRange.toString().length;
+      } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
+          var textRange = document.selection.createRange();
+          var preCaretTextRange = document.body.createTextRange();
+          preCaretTextRange.moveToElementText(element);
+          preCaretTextRange.setEndPoint("EndToEnd", textRange);
+          caretOffset = preCaretTextRange.text.length;
+      }
+      return caretOffset;
+  }
 
 });
 
