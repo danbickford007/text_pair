@@ -88,15 +88,16 @@ connection.on('message', function(message) {
     + ' with ' + userColor + ' color.');
      
   } else { // log and broadcast the message
-    console.log((new Date()) + ' Received Message from '
-    + userName + ': ' + JSON.parse(message.utf8Data).message);
+    console.log((new Date()) + ' Received Message '
+    +  ': ' + JSON.parse(message.utf8Data).message +"::"+JSON.parse(message.utf8Data).index +">>>"+JSON.parse(message.utf8Data).nodePosition);
     // we want to keep history of all sent messages
     var obj = {
-    time: (new Date()).getTime(),
-    text: JSON.parse(message.utf8Data).message,
-    index: JSON.parse(message.utf8Data).index,
-    author: userName,
-    color: userColor
+      time: (new Date()).getTime(),
+      text: JSON.parse(message.utf8Data).message,
+      index: JSON.parse(message.utf8Data).index,
+      nodePosition: JSON.parse(message.utf8Data).nodePosition,
+      author: userName,
+      color: userColor
     };
     history.push(obj);
     history = history.slice(-100);
