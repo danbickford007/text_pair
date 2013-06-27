@@ -138,11 +138,10 @@ $(function () {
         var textNode = document.getElementById("content");
         var range = document.createRange();
         console.log("+++++++++++++"+index+"++++++++++++"+nodePosition+"..........."+textNode.childNodes.length);
-        //console.log(">>>>>>>>>>>>>>>"+textNode.childNodes[nodePosition].innerHTML);
-        //for(var i=0; i<textNode.childNodes.length; i++){
-        //  console.log("?????????????"+textNode.childNodes[i].length);
-        //}
-        range.setStart(textNode.childNodes[nodePosition], index);
+        console.log("===>"+textNode.childNodes[nodePosition].innerHTML);
+        console.log("!!!!!!!!!!"+sel.rangeCount);
+        range.selectNodeContents(textNode.childNodes[nodePosition].firstChild);
+        range.setStart(textNode.childNodes[nodePosition].firstChild, index);
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
